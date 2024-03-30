@@ -1,7 +1,10 @@
-const options = {}
+import { Encoding } from "crypto";
+import { TomlEnvOptions } from "./custom-types.js";
+
+const options: TomlEnvOptions = {};
 
 if (process.env.DOTENV_CONFIG_ENCODING != null) {
-  options.encoding = process.env.DOTENV_CONFIG_ENCODING;
+  options.encoding = process.env.DOTENV_CONFIG_ENCODING as Encoding;
 }
 
 if (process.env.DOTENV_CONFIG_PATH != null) {
@@ -9,11 +12,11 @@ if (process.env.DOTENV_CONFIG_PATH != null) {
 }
 
 if (process.env.DOTENV_CONFIG_DEBUG != null) {
-  options.debug = process.env.DOTENV_CONFIG_DEBUG;
+  options.debug = !!process.env.DOTENV_CONFIG_DEBUG;
 }
 
 if (process.env.DOTENV_CONFIG_OVERRIDE != null) {
-  options.override = process.env.DOTENV_CONFIG_OVERRIDE;
+  options.override = !!process.env.DOTENV_CONFIG_OVERRIDE;
 }
 
 if (process.env.DOTENV_CONFIG_DOTENV_KEY != null) {

@@ -1,6 +1,10 @@
 {
 	"compilerOptions": {
+		"moduleResolution": "NodeNext",
+		"module": "NodeNext",
+		"resolveJsonModule": true,
 		"outDir": "dist",
+		"declaration": true,
 		"target": "es2022", // Node.js 18
 		"lib": [
 			"es2022"

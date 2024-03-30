@@ -2,11 +2,11 @@
 	"name": "toml-env",
 	"version": "0.0.1",
 	"description": "Node.JS dotenv-alike module using \"env files\" written in TOML",
+	"type": "module",
 	"main": "index.js",
 	"exports": {
-		".": "./index.js",
-		"./config": "./src/config.js",
-		"./config.js": "./src/config.js"
+		"types": "./dist/source/index.d.ts",
+		"default": "./dist/source/index.js"
 	},
 	"directories": {
 		"test": "test"
@@ -26,11 +26,11 @@
 	},
 	"homepage": "https://github.com/2colours/toml-env#readme",
 	"devDependencies": {
+		"@types/node": "^20.12.2",
 		"typescript": "^5.4.3",
 		"vitest": "^1.4.0"
 	},
-	"exports": {
-		"types": "./dist/source/index.d.ts",
-		"default": "./dist/source/index.js"
+	"dependencies": {
+		"smol-toml": "^1.1.4"
 	}
 }
