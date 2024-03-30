@@ -1,4 +1,4 @@
-import { Encoding } from "crypto";
+import { Encoding } from 'crypto';
 
 export class TomlEnvError extends Error {
     constructor(message: string, public readonly code: string) {

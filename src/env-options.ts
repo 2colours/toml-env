@@ -1,5 +1,5 @@
-import { Encoding } from "crypto";
-import { TomlEnvOptions } from "./custom-types.js";
+import { Encoding } from 'crypto';
+import { TomlEnvOptions } from './custom-types.js';
 
 const options: TomlEnvOptions = {};
 

@@ -11,6 +11,10 @@ const version = packageJson.version;
 
 export { parse };
 
+function stringifyTomlValues(parsedToml: Record<string, TomlPrimitive>): NodeJS.ProcessEnv {
+  return Object.fromEntries(Object.entries(parsedToml).map(([key, value]) => [key, JSON.stringify(value)]))
+}
+
 export function _parseVault(options: TomlEnvOptions) {
   const vaultPath = _vaultPath(options);
 
@@ -147,7 +151,7 @@ export function _configVault(options: ConfigVaultOptions) {
     processEnv = options.processEnv;
   }
 
-  populate(processEnv, parsed, options);
+  populate(processEnv, stringifyTomlValues(parsed), options);
 
   return { parsed };
 }
@@ -175,8 +179,9 @@ export function configDotenv(options: TomlEnvOptions) {
     try {
       // Specifying an encoding returns a string instead of a buffer
       const parsed = parse(fs.readFileSync(path, { encoding }));
+      const parsedWithJSONValues = stringifyTomlValues(parsed);
 
-      populate(parsedAll, parsed, options);
+      populate(parsedAll, parsedWithJSONValues, options);
     } catch (e) {
       if (debug) {
         _debug(`Failed to load ${path} ${e.message}`);
@@ -246,18 +251,18 @@ export function decrypt(encrypted: WithImplicitCoercion<string>, keyStr: string)
 }
 
 // Populate process.env with parsed values
-export function populate(processEnv: NodeJS.ProcessEnv, parsed: Record<string, TomlPrimitive>, options: PopulateOptions = {}) {
+export function populate(processEnv: NodeJS.ProcessEnv, parsedEnv: NodeJS.ProcessEnv, options: PopulateOptions = {}) {
   const { debug, override } = options;
 
-  if (typeof parsed != 'object') {
+  if (typeof parsedEnv != 'object') {
     throw new TomlEnvError('OBJECT_REQUIRED: Please check the processEnv argument being passed to populate', 'OBJECT_REQUIRED');
   }
 
   // Set process.env
-  for (const key of Object.keys(parsed)) {
+  for (const key of Object.keys(parsedEnv)) {
     if (Object.prototype.hasOwnProperty.call(processEnv, key)) {
       if (override) {
-        processEnv[key] = JSON.stringify(parsed[key]);
+        processEnv[key] = parsedEnv[key];
         if (debug) {
           _debug(`"${key}" is already defined and WAS overwritten`);
         }
@@ -267,7 +272,7 @@ export function populate(processEnv: NodeJS.ProcessEnv, parsed: Record<string, T
         }
       }
     } else {
-      processEnv[key] = JSON.stringify(parsed[key]);
+      processEnv[key] = parsedEnv[key];
     }
   }
 }
