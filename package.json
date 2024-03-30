@@ -3,6 +3,11 @@
 	"version": "0.0.1",
 	"description": "Node.JS dotenv-alike module using \"env files\" written in TOML",
 	"main": "index.js",
+	"exports": {
+		".": "./index.js",
+		"./config": "./src/config.js",
+		"./config.js": "./src/config.js"
+	},
 	"directories": {
 		"test": "test"
 	},
