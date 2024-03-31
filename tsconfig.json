@@ -4,6 +4,7 @@
 		"module": "NodeNext",
 		"resolveJsonModule": true,
 		"outDir": "dist",
+		"rootDir": "src",
 		"declaration": true,
 		"target": "es2022", // Node.js 18
 		"lib": [
