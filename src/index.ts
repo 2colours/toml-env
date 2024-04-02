@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as crypto from 'crypto';
+//@ts-ignore package.json is NOT a source file, it's mandatory metadata
 import packageJson from '../package.json' assert { type: 'json' };
 import { TomlPrimitive, parse } from 'smol-toml';
 import { ConfigVaultOptions, DotenvKeyOptions, PopulateOptions, TomlEnvError, TomlEnvOptions, VaultPathOptions } from './custom-types.js';
@@ -159,7 +160,7 @@ export function _configVault(options: ConfigVaultOptions) {
 export function configDotenv(options: TomlEnvOptions) {
   const dotenvPath = path.resolve(process.cwd(), '.env');
   let encoding: BufferEncoding = 'utf8';
-  const debug = Boolean(options?.debug);
+  const debug = options?.debug;
 
   if (options?.encoding) {
     encoding = options.encoding;
@@ -177,7 +178,7 @@ export function configDotenv(options: TomlEnvOptions) {
   const parsedAll = {};
   for (const path of optionPaths) {
     try {
-      // Specifying an encoding returns a string instead of a buffer
+            // Specifying an encoding returns a string instead of a buffer
       const parsed = parse(fs.readFileSync(path, { encoding }));
       const parsedWithJSONValues = stringifyTomlValues(parsed);
 
