@@ -12,7 +12,7 @@ const version = packageJson.version;
 
 export { parse };
 
-function stringifyTomlValues(parsedToml: Record<string, TomlPrimitive>): NodeJS.ProcessEnv {
+export function stringifyTomlValues(parsedToml: Record<string, TomlPrimitive>): NodeJS.ProcessEnv {
   return Object.fromEntries(Object.entries(parsedToml).map(([key, value]) => [key, JSON.stringify(value)]))
 }
 
@@ -37,7 +37,7 @@ export function _parseVault(options: TomlEnvOptions) {
       const key = keys[i].trim();
 
       // Get instructions for decrypt
-      const attrs = _instructions(result, key);
+      const attrs = _instructions(result as { parsed: any }, key); // ideally, TS should infer this because of `if (!result.parsed) throw ...`
 
       // Decrypt
       decrypted = decrypt(attrs.ciphertext, attrs.key);
@@ -154,10 +154,10 @@ export function _configVault(options: ConfigVaultOptions) {
 
   populate(processEnv, stringifyTomlValues(parsed), options);
 
-  return { parsed };
+  return { parsed: stringifyTomlValues(parsed) };
 }
 
-export function configDotenv(options: TomlEnvOptions) {
+export function configDotenv(options: TomlEnvOptions): { parsed?: Record<string, TomlPrimitive>, error?: {} } {
   const dotenvPath = path.resolve(process.cwd(), '.env');
   let encoding: BufferEncoding = 'utf8';
   const debug = options?.debug;
@@ -178,7 +178,7 @@ export function configDotenv(options: TomlEnvOptions) {
   const parsedAll = {};
   for (const path of optionPaths) {
     try {
-            // Specifying an encoding returns a string instead of a buffer
+      // Specifying an encoding returns a string instead of a buffer
       const parsed = parse(fs.readFileSync(path, { encoding }));
       const parsedWithJSONValues = stringifyTomlValues(parsed);
 
@@ -206,7 +206,7 @@ export function configDotenv(options: TomlEnvOptions) {
 }
 
 // Populates process.env from .env file
-export function config(options: TomlEnvOptions) {
+export function config(options?: TomlEnvOptions): { parsed?: Record<string, TomlPrimitive>, error?: {} } {
   // fallback to original dotenv if DOTENV_KEY is not set
   if (_dotenvKey(options).length == 0) {
     return configDotenv(options);

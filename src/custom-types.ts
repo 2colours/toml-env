@@ -1,4 +1,5 @@
 import { Encoding } from 'crypto';
+import { PathLike } from 'fs';
 
 export class TomlEnvError extends Error {
     constructor(message: string, public readonly code: string) {
@@ -16,7 +17,7 @@ export interface ConfigVaultOptions extends PopulateOptions {
 }
 
 export interface VaultPathOptions {
-    path?: string;
+    path?: PathLike | PathLike[];
 }
 
 export interface DotenvKeyOptions {
