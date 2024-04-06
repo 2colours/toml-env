@@ -5,9 +5,32 @@ import path from 'path';
 import dotenv, { stringifyTomlValues } from '../src';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const mocks = vi.hoisted(() => {
+  return {
+    fs: {
+      readFileSync: vi.fn().mockImplementation((...args: Parameters<typeof fs["readFileSync"]>) => fs.readFileSync(...args)),
+    },
+    os: {
+      homedir: vi.fn().mockImplementation(() => os.homedir()),
+    },
+  }
+});
+
+vi.mock('fs', async (importOriginal) => {
+  const module = await importOriginal<typeof import('fs')>();
+  return { ...module, readFileSync: mocks.fs.readFileSync };
+});
+
+vi.mock('os', async (importOriginal) => {
+  const module = await importOriginal<typeof import('os')>();
+  return { ...module, homedir: mocks.os.homedir };
+});
+
 describe('general config options', () => {
     beforeEach(() => {
         delete process.env.BASIC; // reset
+        mocks.fs.readFileSync.mockClear();
+        mocks.os.homedir.mockClear();
     });
 
     it('takes string for path option', () => {
@@ -76,27 +99,22 @@ describe('general config options', () => {
     });
 
     it('takes option for path along with home directory char ~', () => {
-        const readFileSyncStub = vi.spyOn(fs, 'readFileSync').mockReturnValue('test="foo"');
+        mocks.fs.readFileSync.mockImplementationOnce(() => 'test="foo"');
+        mocks.os.homedir.mockImplementationOnce(() => mockedHomedir);
         const mockedHomedir = '/Users/dummy';
-        const homedirStub = vi.spyOn(os, 'homedir').mockReturnValue(mockedHomedir);
         const testPath = '~/.env';
         dotenv.config({ path: testPath });
 
-        expect(readFileSyncStub).toBeCalledWith(path.join(mockedHomedir, '.env'));
-        expect(homedirStub).toBeCalled();
-
-        homedirStub.mockClear();
-        readFileSyncStub.mockClear();
+        expect(mocks.fs.readFileSync).toBeCalledWith(path.join(mockedHomedir, '.env'), expect.anything());
+        expect(mocks.os.homedir).toBeCalled();
     });
 
     it('takes option for encoding', () => {
-        const readFileSyncStub = vi.spyOn(fs, 'readFileSync').mockReturnValue('test="foo"');
+        mocks.fs.readFileSync.mockImplementationOnce(() => 'BASIC="basic"');
 
         const testEncoding = 'latin1';
         dotenv.config({ encoding: testEncoding });
-        expect(readFileSyncStub).toBeCalledWith({ encoding: testEncoding });
-
-        readFileSyncStub.mockClear();
+        expect(mocks.fs.readFileSync).toBeCalledWith(expect.anything(), { encoding: testEncoding });
     });
 
     it('takes option for debug', () => {
@@ -109,19 +127,14 @@ describe('general config options', () => {
     });
 
     it('reads path with encoding, parsing output to process.env', () => {
-        const readFileSyncStub = vi.spyOn(fs, 'readFileSync').mockImplementation(() => {
-            return 'BASIC="basic"';
-        });
+        mocks.fs.readFileSync.mockImplementationOnce(() => 'BASIC="basic"');
         const parseStub = vi.spyOn(dotenv, 'parse').mockReturnValue({ BASIC: 'basic' });
 
         const res = dotenv.config({ path: 'test/.env' });
 
         //expect(res.parsed).toStrictEqual(stringifyTomlValues({ BASIC: 'basic' }));
         //expect(parseStub).toBeCalled();
-        expect(readFileSyncStub).toBeCalledTimes(1);
-
-        readFileSyncStub.mockClear();
-        parseStub.mockClear();
+        expect(mocks.fs.readFileSync).toBeCalledTimes(1);
 
     });
 
@@ -192,23 +205,19 @@ describe('general config options', () => {
     });
 
     it('returns any errors thrown from reading file or parsing', () => {
-        const readFileSyncStub = vi.spyOn(fs, 'readFileSync').mockImplementation(() => {
-            throw new Error();
-        });
+        mocks.fs.readFileSync.mockImplementation(() => { throw new Error() });
 
         const env = dotenv.config();
 
         expect(env.error).toBeInstanceOf(Error);
 
-        readFileSyncStub.mockClear();
+        mocks.fs.readFileSync.mockClear();
     });
 
     it('logs any errors thrown from reading file or parsing when in debug mode', () => {
 
         const logStub = vi.spyOn(console, 'log');
-        const readFileSyncStub = vi.spyOn(fs, 'readFileSync').mockImplementation(() => {
-            throw new Error();
-        });
+        mocks.fs.readFileSync.mockImplementation(() => { throw new Error() });
 
         const env = dotenv.config({ debug: true });
 
