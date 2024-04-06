@@ -121,21 +121,34 @@ function _instructions(result: { parsed: Record<string, TomlPrimitive>; error?: 
 function _vaultPath(options: VaultPathOptions) {
   let possibleVaultPath = null;
 
-  if (options?.path?.length > 0) {
+  if (options?.path != null) {
     if (Array.isArray(options.path)) {
       for (const filepath of options.path) {
         if (fs.existsSync(filepath)) {
-          possibleVaultPath = filepath.endsWith('.vault') ? filepath : `${filepath}.vault`;
+          possibleVaultPath = ensureVaultPath(filepath);
         }
       }
     } else {
-      possibleVaultPath = options.path.endsWith('.vault') ? options.path : `${options.path}.vault`;
+      possibleVaultPath = ensureVaultPath(options.path);
     }
   } else {
     possibleVaultPath = path.resolve(process.cwd(), '.env.vault');
   }
 
   return fs.existsSync(possibleVaultPath) ? possibleVaultPath : null;
+}
+
+function ensureVaultPath(path: fs.PathLike): fs.PathLike {
+  switch (true) {
+    case path instanceof URL:
+      const result = new URL(path);
+      result.pathname = path.pathname.endsWith('.vault') ? path.pathname : `${path.pathname}.vault`;
+      return result;
+    case path instanceof Buffer:
+      path = path.toString();
+    case typeof path == 'string':
+      return path.endsWith('.vault') ? path : `${path}.vault`;
+  }
 }
 
 function _resolveHome(envPath: string) {
