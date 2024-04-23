@@ -20,10 +20,10 @@ export interface VaultPathOptions {
     path?: PathLike | PathLike[];
 }
 
-export interface DotenvKeyOptions {
-    DOTENV_KEY?: string;
+export interface TomlEnvKeyOptions {
+    TOML_ENV_KEY?: string;
 }
 
-export interface TomlEnvOptions extends VaultPathOptions, ConfigVaultOptions, DotenvKeyOptions {
+export interface TomlEnvOptions extends VaultPathOptions, ConfigVaultOptions, TomlEnvKeyOptions {
     encoding?: Encoding;
 }

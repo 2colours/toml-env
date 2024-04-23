@@ -1,4 +1,4 @@
-const re = /^dotenv_config_(encoding|path|debug|override|DOTENV_KEY)=(.+)$/;
+const re = /^toml_env_config_(encoding|path|debug|override|TOML_ENV_KEY)=(.+)$/;
 
 export default function optionMatcher(args: string[]) {
   return args.reduce(function (acc, cur) {

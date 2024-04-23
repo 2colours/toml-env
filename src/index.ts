@@ -5,10 +5,12 @@ import * as crypto from 'crypto';
 //@ts-ignore package.json is NOT a source file, it's mandatory metadata
 import packageJson from '../package.json' assert { type: 'json' };
 import { TomlPrimitive, parse } from 'smol-toml';
-import { ConfigVaultOptions, DotenvKeyOptions, PopulateOptions, TomlEnvError, TomlEnvOptions, VaultPathOptions } from './custom-types.js';
+import { ConfigVaultOptions, TomlEnvKeyOptions, PopulateOptions, TomlEnvError, TomlEnvOptions, VaultPathOptions } from './custom-types.js';
 import { URL } from 'url';
 
 const version = packageJson.version;
+const defaultVaultName = '.env.toml.vault';
+const defaultEnvName = '.env';
 
 export { parse };
 
@@ -19,15 +21,15 @@ export function stringifyTomlValues(parsedToml: Record<string, TomlPrimitive>): 
 export function _parseVault(options: TomlEnvOptions) {
   const vaultPath = _vaultPath(options);
 
-  // Parse .env.vault
-  const result = configDotenv({ path: vaultPath });
+  // Parse .env.toml.vault
+  const result = configTomlEnv({ path: vaultPath });
   if (!result.parsed) {
     throw new TomlEnvError(`MISSING_DATA: Cannot parse ${vaultPath} for an unknown reason`, 'MISSING_DATA');
   }
 
   // handle scenario for comma separated keys - for use with key rotation
-  // example: DOTENV_KEY="dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=prod,dotenv://:key_7890@dotenvx.com/vault/.env.vault?environment=prod"
-  const keys = _dotenvKey(options).split(',');
+  // example: TOML_ENV_KEY="dotenv://:key_1234@dotenvx.com/vault/.env.toml.vault?environment=prod,dotenv://:key_7890@dotenvx.com/vault/.env.toml.vault?environment=prod"
+  const keys = _tomlEnvKey(options).split(',');
   const length = keys.length;
 
   let decrypted;
@@ -52,45 +54,45 @@ export function _parseVault(options: TomlEnvOptions) {
     }
   }
 
-  // Parse decrypted .env string
+  // Parse decrypted .env.toml string
   return parse(decrypted);
 }
 
 function _log(message: string) {
-  console.log(`[dotenv@${version}][INFO] ${message}`);
+  console.log(`[toml-env@${version}][INFO] ${message}`);
 }
 
 function _warn(message: string) {
-  console.log(`[dotenv@${version}][WARN] ${message}`);
+  console.log(`[toml-env@${version}][WARN] ${message}`);
 }
 
 function _debug(message: string) {
-  console.log(`[dotenv@${version}][DEBUG] ${message}`);
+  console.log(`[toml-env@${version}][DEBUG] ${message}`);
 }
 
-function _dotenvKey(options: DotenvKeyOptions) {
-  // prioritize developer directly setting options.DOTENV_KEY
-  if (options?.DOTENV_KEY?.length > 0) {
-    return options.DOTENV_KEY;
+function _tomlEnvKey(options: TomlEnvKeyOptions) {
+  // prioritize developer directly setting options.TOML_ENV_KEY
+  if (options?.TOML_ENV_KEY?.length > 0) {
+    return options.TOML_ENV_KEY;
   }
 
-  // secondary infra already contains a DOTENV_KEY environment variable
-  if (process.env.DOTENV_KEY?.length > 0) {
-    return process.env.DOTENV_KEY;
+  // secondary infra already contains a TOML_ENV_KEY environment variable
+  if (process.env.TOML_ENV_KEY?.length > 0) {
+    return process.env.TOML_ENV_KEY;
   }
 
   // fallback to empty string
   return '';
 }
 
-function _instructions(result: { parsed: Record<string, TomlPrimitive>; error?: any; }, dotenvKey: WithImplicitCoercion<string>) {
-  // Parse DOTENV_KEY. Format is a URI
+function _instructions(result: { parsed: Record<string, TomlPrimitive>; error?: any; }, tomlEnvKey: WithImplicitCoercion<string>) {
+  // Parse TOML_ENV_KEY. Format is a URI
   let uri: URL;
   try {
-    uri = new URL(dotenvKey);
+    uri = new URL(tomlEnvKey);
   } catch (error) {
     if (error.code == 'ERR_INVALID_URL') {
-      throw new TomlEnvError('INVALID_DOTENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=development', 'INVALID_DOTENV_KEY');
+      throw new TomlEnvError('INVALID_TOML_ENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenvx.com/vault/.env.toml.vault?environment=development', 'INVALID_TOML_ENV_KEY');
     }
 
     throw error;
@@ -99,20 +101,20 @@ function _instructions(result: { parsed: Record<string, TomlPrimitive>; error?: 
   // Get decrypt key
   const key = uri.password;
   if (!key) {
-    throw new TomlEnvError('INVALID_DOTENV_KEY: Missing key part', 'INVALID_DOTENV_KEY');
+    throw new TomlEnvError('INVALID_TOML_ENV_KEY: Missing key part', 'INVALID_TOML_ENV_KEY');
   }
 
   // Get environment
   const environment = uri.searchParams.get('environment');
   if (!environment) {
-    throw new TomlEnvError('INVALID_DOTENV_KEY: Missing environment part', 'INVALID_DOTENV_KEY');
+    throw new TomlEnvError('INVALID_TOML_ENV_KEY: Missing environment part', 'INVALID_TOML_ENV_KEY');
   }
 
   // Get ciphertext payload
-  const environmentKey = `DOTENV_VAULT_${environment.toUpperCase()}`;
-  const ciphertext = JSON.stringify(result.parsed[environmentKey]); // DOTENV_VAULT_PRODUCTION
+  const environmentKey = `TOML_ENV_VAULT_${environment.toUpperCase()}`;
+  const ciphertext = JSON.stringify(result.parsed[environmentKey]); // TOML_ENV_VAULT_PRODUCTION
   if (!ciphertext) {
-    throw new TomlEnvError(`NOT_FOUND_DOTENV_ENVIRONMENT: Cannot locate environment ${environmentKey} in your .env.vault file.`, 'NOT_FOUND_DOTENV_ENVIRONMENT');
+    throw new TomlEnvError(`NOT_FOUND_TOML_ENV_ENVIRONMENT: Cannot locate environment ${environmentKey} in your ${defaultVaultName} file.`, 'NOT_FOUND_TOML_ENV_ENVIRONMENT');
   }
 
   return { ciphertext, key };
@@ -132,7 +134,7 @@ function _vaultPath(options: VaultPathOptions) {
       possibleVaultPath = ensureVaultPath(options.path);
     }
   } else {
-    possibleVaultPath = path.resolve(process.cwd(), '.env.vault');
+    possibleVaultPath = path.resolve(process.cwd(), defaultVaultName);
   }
 
   return fs.existsSync(possibleVaultPath) ? possibleVaultPath : null;
@@ -156,7 +158,7 @@ function _resolveHome(envPath: string) {
 }
 
 export function _configVault(options: ConfigVaultOptions) {
-  _log('Loading env from encrypted .env.vault');
+  _log(`Loading env from encrypted ${defaultVaultName}`);
 
   const parsed = _parseVault(options);
 
@@ -170,8 +172,8 @@ export function _configVault(options: ConfigVaultOptions) {
   return { parsed: stringifyTomlValues(parsed) };
 }
 
-export function configDotenv(options: TomlEnvOptions): { parsed?: Record<string, TomlPrimitive>, error?: {} } {
-  const dotenvPath = path.resolve(process.cwd(), '.env');
+export function configTomlEnv(options: TomlEnvOptions): { parsed?: Record<string, TomlPrimitive>, error?: {} } {
+  const tomlEnvPath = path.resolve(process.cwd(), defaultEnvName);
   let encoding: BufferEncoding = 'utf8';
   const debug = options?.debug;
 
@@ -183,7 +185,7 @@ export function configDotenv(options: TomlEnvOptions): { parsed?: Record<string,
     }
   }
 
-  const optionPaths = options?.path ? [options.path].flat().map(_resolveHome) : [dotenvPath];
+  const optionPaths = options?.path ? [options.path].flat().map(_resolveHome) : [tomlEnvPath];
 
   // Build the parsed data in a temporary object (because we need to return it).  Once we have the final
   // parsed data, we will combine it with process.env (or options.processEnv if provided).
@@ -218,20 +220,20 @@ export function configDotenv(options: TomlEnvOptions): { parsed?: Record<string,
   }
 }
 
-// Populates process.env from .env file
+// Populates process.env from .env.toml file
 export function config(options?: TomlEnvOptions): { parsed?: Record<string, TomlPrimitive>, error?: {} } {
-  // fallback to original dotenv if DOTENV_KEY is not set
-  if (_dotenvKey(options).length == 0) {
-    return configDotenv(options);
+  // fallback to original toml env if TOML_ENV_KEY is not set
+  if (_tomlEnvKey(options).length == 0) {
+    return configTomlEnv(options);
   }
 
   const vaultPath = _vaultPath(options);
 
-  // dotenvKey exists but .env.vault file does not exist
+  // tomlEnvKey exists but .env.toml.vault file does not exist
   if (!vaultPath) {
-    _warn(`You set DOTENV_KEY but you are missing a .env.vault file at ${vaultPath}. Did you forget to build it?`);
+    _warn(`You set TOML_ENV_KEY but you are missing a ${defaultVaultName} file at ${vaultPath}. Did you forget to build it?`);
 
-    return configDotenv(options);
+    return configTomlEnv(options);
   }
 
   return _configVault(options);
@@ -255,9 +257,9 @@ export function decrypt(encrypted: WithImplicitCoercion<string>, keyStr: string)
     const decryptionFailed = error.message == 'Unsupported state or unable to authenticate data';
 
     if (isRange || invalidKeyLength) {
-      throw new TomlEnvError('INVALID_DOTENV_KEY: It must be 64 characters long (or more)', 'INVALID_DOTENV_KEY');
+      throw new TomlEnvError('INVALID_TOML_ENV_KEY: It must be 64 characters long (or more)', 'INVALID_TOML_ENV_KEY');
     } else if (decryptionFailed) {
-      throw new TomlEnvError('DECRYPTION_FAILED: Please check your DOTENV_KEY', 'DECRYPTION_FAILED');
+      throw new TomlEnvError('DECRYPTION_FAILED: Please check your TOML_ENV_KEY', 'DECRYPTION_FAILED');
     } else {
       throw error;
     }
@@ -292,7 +294,7 @@ export function populate(processEnv: NodeJS.ProcessEnv, parsedEnv: NodeJS.Proces
 }
 
 export default {
-  configDotenv,
+  configTomlEnv,
   _configVault,
   _parseVault,
   config,

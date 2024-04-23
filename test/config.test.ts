@@ -34,7 +34,7 @@ describe('general config options', () => {
     });
 
     it('takes string for path option', () => {
-        const testPath = 'test/.env';
+        const testPath = 'test/.env.toml';
         const env = dotenv.config({ path: testPath });
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
@@ -42,7 +42,7 @@ describe('general config options', () => {
     });
 
     it('takes array for path option', () => {
-        const testPath = ['test/.env'];
+        const testPath = ['test/.env.toml'];
         const env = dotenv.config({ path: testPath });
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
@@ -50,7 +50,7 @@ describe('general config options', () => {
     });
 
     it('takes two or more files in the array for path option', () => {
-        const testPath = ['test/.env.local', 'test/.env'];
+        const testPath = ['test/.env.toml.local', 'test/.env.toml'];
         const env = dotenv.config({ path: testPath });
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('local_basic'));
@@ -60,7 +60,7 @@ describe('general config options', () => {
     it('sets values from both .env.local and .env. first file key wins.', () => {
         delete process.env.SINGLE_QUOTES;
 
-        const testPath = ['test/.env.local', 'test/.env'];
+        const testPath = ['test/.env.toml.local', 'test/.env.toml'];
         const env = dotenv.config({ path: testPath });
 
         // in both files - first file wins (.env.local)
@@ -77,7 +77,7 @@ describe('general config options', () => {
     });
 
     it('sets values from both .env.local and .env. but none is used as value existed in process.env.', () => {
-        const testPath = ['test/.env.local', 'test/.env'];
+        const testPath = ['test/.env.toml.local', 'test/.env.toml'];
         process.env.BASIC = 'existing';
 
         const env = dotenv.config({ path: testPath });
@@ -88,7 +88,7 @@ describe('general config options', () => {
     });
 
     it('takes URL for path option', () => {
-        const envPath = path.resolve(__dirname, '.env');
+        const envPath = path.resolve(__dirname, '.env.toml');
         const fileUrl = new URL(`file://${envPath}`);
 
         const env = dotenv.config({ path: fileUrl });
@@ -102,10 +102,10 @@ describe('general config options', () => {
         mocks.fs.readFileSync.mockImplementationOnce(() => 'test="foo"');
         mocks.os.homedir.mockImplementationOnce(() => mockedHomedir);
         const mockedHomedir = '/Users/dummy';
-        const testPath = '~/.env';
+        const testPath = '~/.env.toml';
         dotenv.config({ path: testPath });
 
-        expect(mocks.fs.readFileSync).toBeCalledWith(path.join(mockedHomedir, '.env'), expect.anything());
+        expect(mocks.fs.readFileSync).toBeCalledWith(path.join(mockedHomedir, '.env.toml'), expect.anything());
         expect(mocks.os.homedir).toBeCalled();
     });
 
@@ -130,7 +130,7 @@ describe('general config options', () => {
         mocks.fs.readFileSync.mockImplementationOnce(() => 'BASIC="basic"');
         const parseStub = vi.spyOn(dotenv, 'parse').mockReturnValue({ BASIC: 'basic' });
 
-        const res = dotenv.config({ path: 'test/.env' });
+        const res = dotenv.config({ path: 'test/.env.toml' });
 
         //expect(res.parsed).toStrictEqual(stringifyTomlValues({ BASIC: 'basic' }));
         //expect(parseStub).toBeCalled();
@@ -139,7 +139,7 @@ describe('general config options', () => {
     });
 
     it('does not write over keys already in process.env', () => {
-        const testPath = 'test/.env'
+        const testPath = 'test/.env.toml'
         const existing = 'bar'
         process.env.BASIC = existing
         const env = dotenv.config({ path: testPath })
@@ -150,7 +150,7 @@ describe('general config options', () => {
     });
 
     it('does write over keys already in process.env if override turned on', () => {
-        const testPath = 'test/.env'
+        const testPath = 'test/.env.toml'
         const existing = 'bar'
         process.env.BASIC = existing
         const env = dotenv.config({ path: testPath, override: true })
@@ -161,7 +161,7 @@ describe('general config options', () => {
     });
 
     it('does not write over keys already in process.env if the key has a falsy value', () => {
-        const testPath = 'test/.env'
+        const testPath = 'test/.env.toml'
         const existing = ''
         process.env.BASIC = existing
         const env = dotenv.config({ path: testPath })
@@ -172,7 +172,7 @@ describe('general config options', () => {
     });
 
     it('does write over keys already in process.env if the key has a falsy value but override is set to true', () => {
-        const testPath = 'test/.env'
+        const testPath = 'test/.env.toml'
         const existing = ''
         process.env.BASIC = existing
         const env = dotenv.config({ path: testPath, override: true })
@@ -182,7 +182,7 @@ describe('general config options', () => {
     });
 
     it('can write to a different object rather than process.env', () => {
-        const testPath = 'test/.env'
+        const testPath = 'test/.env.toml'
         process.env.BASIC = 'other' // reset process.env
 
         const myObject: NodeJS.ProcessEnv = {};
@@ -196,7 +196,7 @@ describe('general config options', () => {
     });
 
     it('returns parsed object', () => {
-        const testPath = 'test/.env';
+        const testPath = 'test/.env.toml';
         const env = dotenv.config({ path: testPath });
 
         expect(env.error).toBeUndefined();

@@ -21,7 +21,7 @@ function spawn(args: string[], options = {}) {
 }
 
 describe('cli-options module', () => {
-    it('dotenv/config enables preloading', () => {
+    it('toml-env/config enables preloading', () => {
         expect(
             spawn(
                 [
@@ -29,14 +29,14 @@ describe('cli-options module', () => {
                     './dist/config.js',
                     '-e',
                     'console.log(process.env.BASIC)',
-                    'dotenv_config_encoding=utf8',
-                    'dotenv_config_path=./test/.env'
+                    'toml_env_config_encoding=utf8',
+                    'toml_env_config_path=./test/.env.toml'
                 ]
             )
         ).toBe(`${JSON.stringify('basic')}\n`);
     });
     
-    it('dotenv/config supports configuration via environment variables', () => {
+    it('toml-env/config supports configuration via environment variables', () => {
         expect(
             spawn(
                 [
@@ -47,14 +47,14 @@ describe('cli-options module', () => {
                 ],
                 {
                     env: {
-                        DOTENV_CONFIG_PATH: './test/.env'
+                        TOML_ENV_CONFIG_PATH: './test/.env.toml'
                     }
                 }
             )
         ).toBe(`${JSON.stringify('basic')}\n`);
     });
     
-    it('dotenv/config takes CLI configuration over environment variables', () => {
+    it('toml-env/config takes CLI configuration over environment variables', () => {
         expect(
             spawn(
                 [
@@ -62,11 +62,11 @@ describe('cli-options module', () => {
                     './dist/config.js',
                     '-e',
                     'console.log(process.env.BASIC)',
-                    'dotenv_config_path=./test/.env'
+                    'toml_env_config_path=./test/.env.toml'
                 ],
                 {
                     env: {
-                        DOTENV_CONFIG_PATH: '/tmp/dne/path/.env.should.break'
+                        TOML_ENV_CONFIG_PATH: '/tmp/dne/path/.env.should.break'
                     }
                 }
             )
