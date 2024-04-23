@@ -62,6 +62,6 @@ describe('env-options module', () => {
     });
 
     it('sets TOML_ENV_KEY option', async () => {
-        await testOption('TOML_ENV_CONFIG_TOML_ENV_KEY', 'dotenv://:key_ddcaa26504cd70a@dotenvx.com/vault/.env.toml.vault?environment=development', { TOML_ENV_KEY: 'dotenv://:key_ddcaa26504cd70a@dotenvx.com/vault/.env.toml.vault?environment=development' });
+        await testOption('TOML_ENV_CONFIG_TOML_ENV_KEY', 'toml-env://:key_ddcaa26504cd70a@dotenvx.com/vault/.env.toml.vault?environment=development', { TOML_ENV_KEY: 'toml-env://:key_ddcaa26504cd70a@dotenvx.com/vault/.env.toml.vault?environment=development' });
     });
 });

@@ -28,7 +28,7 @@ export function _parseVault(options: TomlEnvOptions) {
   }
 
   // handle scenario for comma separated keys - for use with key rotation
-  // example: TOML_ENV_KEY="dotenv://:key_1234@dotenvx.com/vault/.env.toml.vault?environment=prod,dotenv://:key_7890@dotenvx.com/vault/.env.toml.vault?environment=prod"
+  // example: TOML_ENV_KEY="toml-env://:key_1234@dotenvx.com/vault/.env.toml.vault?environment=prod,toml-env://:key_7890@dotenvx.com/vault/.env.toml.vault?environment=prod"
   const keys = _tomlEnvKey(options).split(',');
   const length = keys.length;
 
@@ -92,7 +92,7 @@ function _instructions(result: { parsed: Record<string, TomlPrimitive>; error?: 
     uri = new URL(tomlEnvKey);
   } catch (error) {
     if (error.code == 'ERR_INVALID_URL') {
-      throw new TomlEnvError('INVALID_TOML_ENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenvx.com/vault/.env.toml.vault?environment=development', 'INVALID_TOML_ENV_KEY');
+      throw new TomlEnvError('INVALID_TOML_ENV_KEY: Wrong format. Must be in valid uri format like toml-env://:key_1234@dotenvx.com/vault/.env.toml.vault?environment=development', 'INVALID_TOML_ENV_KEY');
     }
 
     throw error;

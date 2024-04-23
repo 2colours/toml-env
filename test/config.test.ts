@@ -2,7 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
-import dotenv, { stringifyTomlValues } from '../src';
+import tomlEnv from '../src';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => {
@@ -35,7 +35,7 @@ describe('general config options', () => {
 
     it('takes string for path option', () => {
         const testPath = 'test/.env.toml';
-        const env = dotenv.config({ path: testPath });
+        const env = tomlEnv.config({ path: testPath });
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
         expect(process.env.BASIC).toBe(JSON.stringify('basic'));
@@ -43,7 +43,7 @@ describe('general config options', () => {
 
     it('takes array for path option', () => {
         const testPath = ['test/.env.toml'];
-        const env = dotenv.config({ path: testPath });
+        const env = tomlEnv.config({ path: testPath });
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
         expect(process.env.BASIC).toBe(JSON.stringify('basic'));
@@ -51,7 +51,7 @@ describe('general config options', () => {
 
     it('takes two or more files in the array for path option', () => {
         const testPath = ['test/.env.toml.local', 'test/.env.toml'];
-        const env = dotenv.config({ path: testPath });
+        const env = tomlEnv.config({ path: testPath });
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('local_basic'));
         expect(process.env.BASIC).toBe(JSON.stringify('local_basic'));
@@ -61,7 +61,7 @@ describe('general config options', () => {
         delete process.env.SINGLE_QUOTES;
 
         const testPath = ['test/.env.toml.local', 'test/.env.toml'];
-        const env = dotenv.config({ path: testPath });
+        const env = tomlEnv.config({ path: testPath });
 
         // in both files - first file wins (.env.local)
         expect(env.parsed!.BASIC).toBe(JSON.stringify('local_basic'));
@@ -80,7 +80,7 @@ describe('general config options', () => {
         const testPath = ['test/.env.toml.local', 'test/.env.toml'];
         process.env.BASIC = 'existing';
 
-        const env = dotenv.config({ path: testPath });
+        const env = tomlEnv.config({ path: testPath });
 
         // does not override process.env
         expect(env.parsed!.BASIC).toBe(JSON.stringify('local_basic'));
@@ -91,7 +91,7 @@ describe('general config options', () => {
         const envPath = path.resolve(__dirname, '.env.toml');
         const fileUrl = new URL(`file://${envPath}`);
 
-        const env = dotenv.config({ path: fileUrl });
+        const env = tomlEnv.config({ path: fileUrl });
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
         expect(process.env.BASIC).toBe(JSON.stringify('basic'));
@@ -103,7 +103,7 @@ describe('general config options', () => {
         mocks.os.homedir.mockImplementationOnce(() => mockedHomedir);
         const mockedHomedir = '/Users/dummy';
         const testPath = '~/.env.toml';
-        dotenv.config({ path: testPath });
+        tomlEnv.config({ path: testPath });
 
         expect(mocks.fs.readFileSync).toBeCalledWith(path.join(mockedHomedir, '.env.toml'), expect.anything());
         expect(mocks.os.homedir).toBeCalled();
@@ -113,14 +113,14 @@ describe('general config options', () => {
         mocks.fs.readFileSync.mockImplementationOnce(() => 'BASIC="basic"');
 
         const testEncoding = 'latin1';
-        dotenv.config({ encoding: testEncoding });
+        tomlEnv.config({ encoding: testEncoding });
         expect(mocks.fs.readFileSync).toBeCalledWith(expect.anything(), { encoding: testEncoding });
     });
 
     it('takes option for debug', () => {
         const logStub = vi.spyOn(console, 'log');
 
-        dotenv.config({ debug: true });
+        tomlEnv.config({ debug: true });
         expect(logStub).toBeCalled();
 
         logStub.mockClear();
@@ -128,9 +128,9 @@ describe('general config options', () => {
 
     it('reads path with encoding, parsing output to process.env', () => {
         mocks.fs.readFileSync.mockImplementationOnce(() => 'BASIC="basic"');
-        const parseStub = vi.spyOn(dotenv, 'parse').mockReturnValue({ BASIC: 'basic' });
+        const parseStub = vi.spyOn(tomlEnv, 'parse').mockReturnValue({ BASIC: 'basic' });
 
-        const res = dotenv.config({ path: 'test/.env.toml' });
+        const res = tomlEnv.config({ path: 'test/.env.toml' });
 
         //expect(res.parsed).toStrictEqual(stringifyTomlValues({ BASIC: 'basic' }));
         //expect(parseStub).toBeCalled();
@@ -142,7 +142,7 @@ describe('general config options', () => {
         const testPath = 'test/.env.toml'
         const existing = 'bar'
         process.env.BASIC = existing
-        const env = dotenv.config({ path: testPath })
+        const env = tomlEnv.config({ path: testPath })
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
         expect(process.env.BASIC).toBe(existing);
@@ -153,7 +153,7 @@ describe('general config options', () => {
         const testPath = 'test/.env.toml'
         const existing = 'bar'
         process.env.BASIC = existing
-        const env = dotenv.config({ path: testPath, override: true })
+        const env = tomlEnv.config({ path: testPath, override: true })
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
         expect(process.env.BASIC).toBe(JSON.stringify('basic'));
@@ -164,7 +164,7 @@ describe('general config options', () => {
         const testPath = 'test/.env.toml'
         const existing = ''
         process.env.BASIC = existing
-        const env = dotenv.config({ path: testPath })
+        const env = tomlEnv.config({ path: testPath })
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
         expect(process.env.BASIC).toBe('');
@@ -175,7 +175,7 @@ describe('general config options', () => {
         const testPath = 'test/.env.toml'
         const existing = ''
         process.env.BASIC = existing
-        const env = dotenv.config({ path: testPath, override: true })
+        const env = tomlEnv.config({ path: testPath, override: true })
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
         expect(process.env.BASIC).toBe(JSON.stringify('basic'));
@@ -186,7 +186,7 @@ describe('general config options', () => {
         process.env.BASIC = 'other' // reset process.env
 
         const myObject: NodeJS.ProcessEnv = {};
-        const env = dotenv.config({ path: testPath, processEnv: myObject })
+        const env = tomlEnv.config({ path: testPath, processEnv: myObject })
 
         expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
         console.log('logging', process.env.BASIC)
@@ -197,7 +197,7 @@ describe('general config options', () => {
 
     it('returns parsed object', () => {
         const testPath = 'test/.env.toml';
-        const env = dotenv.config({ path: testPath });
+        const env = tomlEnv.config({ path: testPath });
 
         expect(env.error).toBeUndefined();
         expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
@@ -207,7 +207,7 @@ describe('general config options', () => {
     it('returns any errors thrown from reading file or parsing', () => {
         mocks.fs.readFileSync.mockImplementation(() => { throw new Error() });
 
-        const env = dotenv.config();
+        const env = tomlEnv.config();
 
         expect(env.error).toBeInstanceOf(Error);
 
@@ -219,7 +219,7 @@ describe('general config options', () => {
         const logStub = vi.spyOn(console, 'log');
         mocks.fs.readFileSync.mockImplementation(() => { throw new Error() });
 
-        const env = dotenv.config({ debug: true });
+        const env = tomlEnv.config({ debug: true });
 
         expect(logStub).toBeCalled();
         expect(env.error).toBeInstanceOf(Error);
@@ -231,7 +231,7 @@ describe('general config options', () => {
 
         const logStub = vi.spyOn(console, 'log');
 
-        dotenv.config({ debug: true, override: true });
+        tomlEnv.config({ debug: true, override: true });
 
         expect(logStub).toBeCalled();
 

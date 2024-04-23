@@ -7,14 +7,14 @@ import { describe } from 'node:test';
 
 const testPath = 'test/.env.toml';
 
-const dotenvKey = 'dotenv://:key_ddcaa26504cd70a6fef9801901c3981538563a1767c297cb8416e8a38c62fe00@dotenvx.com/vault/.env.vault?environment=development';
+const tomlEnvKey = 'toml-env://:key_ddcaa26504cd70a6fef9801901c3981538563a1767c297cb8416e8a38c62fe00@dotenvx.com/vault/.env.vault?environment=development';
 
 let envStub;
 let logStub : MockInstance;
 
 describe('vault config testing', () => {
     beforeEach(() => {
-        vi.stubEnv('TOML_ENV_KEY', dotenvKey);
+        vi.stubEnv('TOML_ENV_KEY', tomlEnvKey);
     });
       
     afterEach(() => {
@@ -90,15 +90,15 @@ describe('vault config testing', () => {
         try {
             tomlEnv.config({ path: testPath });
         } catch (e) {
-            expect(e.message).toBe('NOT_FOUND_DOTENV_ENVIRONMENT: Cannot locate environment DOTENV_VAULT_DEVELOPMENT in your .env.vault file.');
-            expect(e.code).toBe('NOT_FOUND_DOTENV_ENVIRONMENT');
+            expect(e.message).toBe('NOT_FOUND_TOML_ENV_ENVIRONMENT: Cannot locate environment TOML_ENV_VAULT_DEVELOPMENT in your .env.toml.vault file.');
+            expect(e.code).toBe('NOT_FOUND_TOML_ENV_ENVIRONMENT');
         }
       
         readFileSync.mockClear();
     });
       
     it('throws missing data when somehow parsed badly', () => {
-        const configDotenvStub = vi.spyOn(tomlEnv, 'configTomlEnv').mockReturnValue({ parsed: undefined });
+        const configTomlEnvStub = vi.spyOn(tomlEnv, 'configTomlEnv').mockReturnValue({ parsed: undefined });
         
         try {
             tomlEnv.config({ path: testPath })
@@ -107,7 +107,7 @@ describe('vault config testing', () => {
             expect(e.code).toBe('MISSING_DATA');
         }
         
-        configDotenvStub.mockClear();
+        configTomlEnvStub.mockClear();
     });
 
     it('throws error when invalid formed TOML_ENV_KEY', () => {
@@ -116,7 +116,7 @@ describe('vault config testing', () => {
         try {
             tomlEnv.config({ path: testPath })
         } catch (e) {
-            expect(e.message).toBe('INVALID_TOML_ENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenvx.com/vault/.env.toml.vault?environment=development');
+            expect(e.message).toBe('INVALID_TOML_ENV_KEY: Wrong format. Must be in valid uri format like toml-env://:key_1234@dotenvx.com/vault/.env.toml.vault?environment=development');
             expect(e.code).toBe('INVALID_TOML_ENV_KEY');
         }
     });
@@ -136,7 +136,7 @@ describe('vault config testing', () => {
     });
       
     it('throws error when TOML_ENV_KEY missing password', () => {
-        vi.stubEnv('TOML_ENV_KEY', 'dotenv://username@dotenvx.com/vault/.env.vault?environment=development');
+        vi.stubEnv('TOML_ENV_KEY', 'toml-env://username@dotenvx.com/vault/.env.vault?environment=development');
       
         try {
             tomlEnv.config({ path: testPath });
@@ -147,7 +147,7 @@ describe('vault config testing', () => {
     });
       
     it('throws error when TOML_ENV_KEY missing environment', () => {
-        vi.stubEnv('TOML_ENV_KEY', 'dotenv://:key_ddcaa26504cd70a6fef9801901c3981538563a1767c297cb8416e8a38c62fe00@dotenvx.com/vault/.env.vault');
+        vi.stubEnv('TOML_ENV_KEY', 'toml-env://:key_ddcaa26504cd70a6fef9801901c3981538563a1767c297cb8416e8a38c62fe00@dotenvx.com/vault/.env.vault');
         
         try {
             tomlEnv.config({ path: testPath });
@@ -188,7 +188,7 @@ describe('vault config testing', () => {
     it('when TOML_ENV_KEY is passed as an option it successfully decrypts and injects', () => {
         vi.stubEnv('TOML_ENV_KEY', '');
       
-        const result = tomlEnv.config({ path: testPath, TOML_ENV_KEY: dotenvKey });
+        const result = tomlEnv.config({ path: testPath, TOML_ENV_KEY: tomlEnvKey });
       
         expect(result.parsed!.ALPHA).toBe(JSON.stringify('zeta'));
         expect(process.env.ALPHA).toBe(JSON.stringify('zeta'));
@@ -224,7 +224,7 @@ describe('vault config testing', () => {
     });
 
     it('raises an INVALID_TOML_ENV_KEY if key RangeError', () => {
-        vi.stubEnv('TOML_ENV_KEY', 'dotenv://:key_ddcaa26504cd70a@dotenvx.com/vault/.env.vault?environment=development');
+        vi.stubEnv('TOML_ENV_KEY', 'toml-env://:key_ddcaa26504cd70a@dotenvx.com/vault/.env.vault?environment=development');
       
         try {
             tomlEnv.config({ path: testPath });
@@ -235,7 +235,7 @@ describe('vault config testing', () => {
     });
       
     it('raises an DECRYPTION_FAILED if key fails to decrypt payload', () => {
-        vi.stubEnv('TOML_ENV_KEY', 'dotenv://:key_2c4d267b8c3865f921311612e69273666cc76c008acb577d3e22bc3046fba386@dotenvx.com/vault/.env.vault?environment=development');
+        vi.stubEnv('TOML_ENV_KEY', 'toml-env://:key_2c4d267b8c3865f921311612e69273666cc76c008acb577d3e22bc3046fba386@dotenvx.com/vault/.env.vault?environment=development');
       
         try {
             tomlEnv.config({ path: testPath });
@@ -246,7 +246,7 @@ describe('vault config testing', () => {
     });
       
     it('raises an DECRYPTION_FAILED if both (comma separated) keys fail to decrypt', () => {
-        vi.stubEnv('TOML_ENV_KEY', 'dotenv://:key_2c4d267b8c3865f921311612e69273666cc76c008acb577d3e22bc3046fba386@dotenvx.com/vault/.env.vault?environment=development,dotenv://:key_c04959b64473e43dd60c56a536ef8481388528b16759736d89515c25eec69247@dotenvx.com/vault/.env.vault?environment=development');
+        vi.stubEnv('TOML_ENV_KEY', 'toml-env://:key_2c4d267b8c3865f921311612e69273666cc76c008acb577d3e22bc3046fba386@dotenvx.com/vault/.env.vault?environment=development,toml-env://:key_c04959b64473e43dd60c56a536ef8481388528b16759736d89515c25eec69247@dotenvx.com/vault/.env.vault?environment=development');
       
         try {
           tomlEnv.config({ path: testPath })
