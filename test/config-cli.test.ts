@@ -33,7 +33,7 @@ describe('cli-options module', () => {
                     'toml_env_config_path=./test/.env.toml'
                 ]
             )
-        ).toBe(`${JSON.stringify('basic')}\n`);
+        ).toBe('basic\n');
     });
     
     it('toml-env/config supports configuration via environment variables', () => {
@@ -51,7 +51,7 @@ describe('cli-options module', () => {
                     }
                 }
             )
-        ).toBe(`${JSON.stringify('basic')}\n`);
+        ).toBe('basic\n');
     });
     
     it('toml-env/config takes CLI configuration over environment variables', () => {
@@ -70,7 +70,7 @@ describe('cli-options module', () => {
                     }
                 }
             )
-        ).toBe(`${JSON.stringify('basic')}\n`);
+        ).toBe('basic\n');
     });
   
 });

@@ -15,7 +15,23 @@ const defaultEnvName = '.env';
 export { parse };
 
 export function stringifyTomlValues(parsedToml: Record<string, TomlPrimitive>): NodeJS.ProcessEnv {
-  return Object.fromEntries(Object.entries(parsedToml).map(([key, value]) => [key, JSON.stringify(value)]))
+  return Object.fromEntries(Object.entries(parsedToml).map(([key, value]) => [key, stringifyTomlValue(value)]))
+}
+
+function stringifyTomlValue(value: TomlPrimitive): string {
+    switch (true) {
+        case typeof value == 'string':
+            return value;
+        case typeof value == 'number':
+        case typeof value == 'boolean':
+            return String(value);
+        case value instanceof Date:
+        case Array.isArray(value):
+        case value != 'null' && typeof value == 'object':
+            return JSON.stringify(value);
+        default:
+            throw new TypeError('Unsupported value for stringifyTomlValue');
+    }
 }
 
 export function _parseVault(options: TomlEnvOptions) {

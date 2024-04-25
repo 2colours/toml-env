@@ -18,7 +18,7 @@ vi.mock('fs', async () => {
 describe('basic', () => {
     it('reads TOML values correctly when importing the config', async () => {
         await import('../src/config.js');
-        expect(process.env.TEXT).toBe(JSON.stringify('some text here'));
-        expect(process.env.INTEGER).toBe(JSON.stringify(12345));
+        expect(process.env.TEXT).toBe('some text here');
+        expect(process.env.INTEGER).toBe(String(12345));
     });
 });

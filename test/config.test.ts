@@ -37,24 +37,24 @@ describe('general config options', () => {
         const testPath = 'test/.env.toml';
         const env = tomlEnv.config({ path: testPath });
 
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
-        expect(process.env.BASIC).toBe(JSON.stringify('basic'));
+        expect(env.parsed!.BASIC).toBe('basic');
+        expect(process.env.BASIC).toBe('basic');
     });
 
     it('takes array for path option', () => {
         const testPath = ['test/.env.toml'];
         const env = tomlEnv.config({ path: testPath });
 
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
-        expect(process.env.BASIC).toBe(JSON.stringify('basic'));
+        expect(env.parsed!.BASIC).toBe('basic');
+        expect(process.env.BASIC).toBe('basic');
     });
 
     it('takes two or more files in the array for path option', () => {
         const testPath = ['test/.env.toml.local', 'test/.env.toml'];
         const env = tomlEnv.config({ path: testPath });
 
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('local_basic'));
-        expect(process.env.BASIC).toBe(JSON.stringify('local_basic'));
+        expect(env.parsed!.BASIC).toBe('local_basic');
+        expect(process.env.BASIC).toBe('local_basic');
     });
 
     it('sets values from both .env.local and .env. first file key wins.', () => {
@@ -64,16 +64,16 @@ describe('general config options', () => {
         const env = tomlEnv.config({ path: testPath });
 
         // in both files - first file wins (.env.local)
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('local_basic'));
-        expect(process.env.BASIC).toBe(JSON.stringify('local_basic'));
+        expect(env.parsed!.BASIC).toBe('local_basic');
+        expect(process.env.BASIC).toBe('local_basic');
 
         // in .env.local only
-        expect(env.parsed!.LOCAL).toBe(JSON.stringify('local'));
-        expect(process.env.LOCAL).toBe(JSON.stringify('local'));
+        expect(env.parsed!.LOCAL).toBe('local');
+        expect(process.env.LOCAL).toBe('local');
 
         // in .env only
-        expect(env.parsed!.SINGLE_QUOTES).toBe(JSON.stringify('single_quotes'));
-        expect(process.env.SINGLE_QUOTES).toBe(JSON.stringify('single_quotes'));
+        expect(env.parsed!.SINGLE_QUOTES).toBe('single_quotes');
+        expect(process.env.SINGLE_QUOTES).toBe('single_quotes');
     });
 
     it('sets values from both .env.local and .env. but none is used as value existed in process.env.', () => {
@@ -83,7 +83,7 @@ describe('general config options', () => {
         const env = tomlEnv.config({ path: testPath });
 
         // does not override process.env
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('local_basic'));
+        expect(env.parsed!.BASIC).toBe('local_basic');
         expect(process.env.BASIC).toBe('existing');
     });
 
@@ -93,8 +93,8 @@ describe('general config options', () => {
 
         const env = tomlEnv.config({ path: fileUrl });
 
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
-        expect(process.env.BASIC).toBe(JSON.stringify('basic'));
+        expect(env.parsed!.BASIC).toBe('basic');
+        expect(process.env.BASIC).toBe('basic');
 
     });
 
@@ -144,7 +144,7 @@ describe('general config options', () => {
         process.env.BASIC = existing
         const env = tomlEnv.config({ path: testPath })
 
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
+        expect(env.parsed!.BASIC).toBe('basic');
         expect(process.env.BASIC).toBe(existing);
 
     });
@@ -155,8 +155,8 @@ describe('general config options', () => {
         process.env.BASIC = existing
         const env = tomlEnv.config({ path: testPath, override: true })
 
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
-        expect(process.env.BASIC).toBe(JSON.stringify('basic'));
+        expect(env.parsed!.BASIC).toBe('basic');
+        expect(process.env.BASIC).toBe('basic');
 
     });
 
@@ -166,7 +166,7 @@ describe('general config options', () => {
         process.env.BASIC = existing
         const env = tomlEnv.config({ path: testPath })
 
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
+        expect(env.parsed!.BASIC).toBe('basic');
         expect(process.env.BASIC).toBe('');
 
     });
@@ -177,8 +177,8 @@ describe('general config options', () => {
         process.env.BASIC = existing
         const env = tomlEnv.config({ path: testPath, override: true })
 
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
-        expect(process.env.BASIC).toBe(JSON.stringify('basic'));
+        expect(env.parsed!.BASIC).toBe('basic');
+        expect(process.env.BASIC).toBe('basic');
     });
 
     it('can write to a different object rather than process.env', () => {
@@ -188,10 +188,10 @@ describe('general config options', () => {
         const myObject: NodeJS.ProcessEnv = {};
         const env = tomlEnv.config({ path: testPath, processEnv: myObject })
 
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
+        expect(env.parsed!.BASIC).toBe('basic');
         console.log('logging', process.env.BASIC)
         expect(process.env.BASIC).toBe('other');
-        expect(myObject.BASIC).toBe(JSON.stringify('basic'));
+        expect(myObject.BASIC).toBe('basic');
 
     });
 
@@ -200,7 +200,7 @@ describe('general config options', () => {
         const env = tomlEnv.config({ path: testPath });
 
         expect(env.error).toBeUndefined();
-        expect(env.parsed!.BASIC).toBe(JSON.stringify('basic'));
+        expect(env.parsed!.BASIC).toBe('basic');
 
     });
 

@@ -161,7 +161,7 @@ describe('vault config testing', () => {
         vi.stubEnv('TOML_ENV_KEY', '');
       
         const result = tomlEnv.config({ path: testPath });
-        expect(result.parsed!.BASIC).toBe(JSON.stringify('basic'));
+        expect(result.parsed!.BASIC).toBe('basic');
 
     });
       
@@ -171,7 +171,7 @@ describe('vault config testing', () => {
       
         const result = tomlEnv.config({ path: testPath });
       
-        expect(result.parsed!.ALPHA).toBe(JSON.stringify('zeta'));
+        expect(result.parsed!.ALPHA).toBe('zeta');
         expect(process.env.ALPHA).toBe('bar');
     });
       
@@ -181,8 +181,8 @@ describe('vault config testing', () => {
       
         const result = tomlEnv.config({ path: testPath, override: true });
       
-        expect(result.parsed!.ALPHA).toBe(JSON.stringify('zeta'));
-        expect(process.env.ALPHA).toBe(JSON.stringify('zeta'));
+        expect(result.parsed!.ALPHA).toBe('zeta');
+        expect(process.env.ALPHA).toBe('zeta');
     });
       
     it('when TOML_ENV_KEY is passed as an option it successfully decrypts and injects', () => {
@@ -190,8 +190,8 @@ describe('vault config testing', () => {
       
         const result = tomlEnv.config({ path: testPath, TOML_ENV_KEY: tomlEnvKey });
       
-        expect(result.parsed!.ALPHA).toBe(JSON.stringify('zeta'));
-        expect(process.env.ALPHA).toBe(JSON.stringify('zeta'));
+        expect(result.parsed!.ALPHA).toBe('zeta');
+        expect(process.env.ALPHA).toBe('zeta');
     });
 
     it('can write to a different object rather than process.env', () => {
@@ -202,9 +202,9 @@ describe('vault config testing', () => {
         const myObject = {};
       
         const result = tomlEnv.config({ path: testPath, processEnv: myObject });
-        expect(result.parsed!.ALPHA).toBe(JSON.stringify('zeta'));
+        expect(result.parsed!.ALPHA).toBe('zeta');
         expect(process.env.ALPHA).toBe('other');
-        expect((myObject as any).ALPHA).toBe(JSON.stringify('zeta'));
+        expect((myObject as any).ALPHA).toBe('zeta');
     });
       
     it('logs when debug and override are turned on', () => {
