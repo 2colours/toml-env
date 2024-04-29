@@ -2,6 +2,8 @@ import { expect, describe, it } from 'vitest';
 import cp from 'child_process';
 import path from 'path';
 
+const envTomlPath = './test/.env.toml';
+
 function spawn(args: string[], options = {}) {
     const { stdout, stderr } = cp.spawnSync(
         process.argv[0], // node binary
@@ -30,7 +32,7 @@ describe('cli-options module', () => {
                     '-e',
                     'console.log(process.env.BASIC)',
                     'toml_env_config_encoding=utf8',
-                    'toml_env_config_path=./test/.env.toml'
+                    `toml_env_config_path=${envTomlPath}`
                 ]
             )
         ).toBe('basic\n');
@@ -47,7 +49,7 @@ describe('cli-options module', () => {
                 ],
                 {
                     env: {
-                        TOML_ENV_CONFIG_PATH: './test/.env.toml'
+                        TOML_ENV_CONFIG_PATH: envTomlPath
                     }
                 }
             )
@@ -62,7 +64,7 @@ describe('cli-options module', () => {
                     './dist/config.js',
                     '-e',
                     'console.log(process.env.BASIC)',
-                    'toml_env_config_path=./test/.env.toml'
+                    `toml_env_config_path=${envTomlPath}`
                 ],
                 {
                     env: {
