@@ -10,7 +10,7 @@ import { URL } from 'url';
 
 const version = packageJson.version;
 const defaultVaultName = '.env.toml.vault';
-const defaultEnvName = '.env';
+const defaultEnvName = '.env.toml';
 
 export { parse };
 

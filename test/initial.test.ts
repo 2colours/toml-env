@@ -11,7 +11,7 @@ vi.mock('fs', async () => {
     return {
         readFileSync(path: any) {
             switch (path) {
-                case pathModule.resolve(process.cwd(), '.env'):
+                case pathModule.resolve(process.cwd(), '.env.toml'):
                     return dotEnvTomlContent;
             }
         }
@@ -27,7 +27,7 @@ describe('basic', () => {
         expect(process.envTyped.INTEGER).toBe(12345);
         expect(process.env.ARRAY).toBe(JSON.stringify([1, 2, 3, 'FOOBAR']));
         expect(process.envTyped.ARRAY[1]).toBe(2);
-        expect(process.envTyped.ARRAY[3]).toBe('FOOBARq');
+        expect(process.envTyped.ARRAY[3]).toBe('FOOBAR');
         expect(process.env.TABLE).toBe(JSON.stringify({KEY: 'VALUE'}));
         expect(process.envTyped.TABLE['KEY']).toBe('VALUE');
     });
