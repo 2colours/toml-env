@@ -2,6 +2,7 @@ import { Encoding } from 'crypto';
 import { PathLike } from 'fs';
 import { TomlPrimitive } from 'smol-toml';
 
+export { type TomlPrimitive };
 export type ParsedToml = Record<string, TomlPrimitive>;
 
 export class TomlEnvError extends Error {

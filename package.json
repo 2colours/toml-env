@@ -1,6 +1,6 @@
 {
 	"name": "@2colours/toml-env",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "Node.JS dotenv-alike module using \"env files\" written in TOML",
 	"type": "module",
 	"exports": {
