@@ -5,7 +5,7 @@ import * as crypto from 'crypto';
 //@ts-ignore package.json is NOT a source file, it's mandatory metadata
 import packageJson from '../package.json' assert { type: 'json' };
 import { TomlPrimitive, parse } from 'smol-toml';
-import { ConfigVaultOptions, TomlEnvKeyOptions, PopulateOptions, TomlEnvError, TomlEnvOptions, VaultPathOptions } from './custom-types.js';
+import { ConfigVaultOptions, TomlEnvKeyOptions, PopulateOptions, TomlEnvError, TomlEnvOptions, VaultPathOptions, ParsedToml } from './custom-types.js';
 import { URL } from 'url';
 
 const version = packageJson.version;
@@ -14,7 +14,7 @@ const defaultEnvName = '.env';
 
 export { parse };
 
-export function stringifyTomlValues(parsedToml: Record<string, TomlPrimitive>): NodeJS.ProcessEnv {
+export function stringifyTomlValues(parsedToml: ParsedToml): NodeJS.ProcessEnv {
   return Object.fromEntries(Object.entries(parsedToml).map(([key, value]) => [key, stringifyTomlValue(value)]))
 }
 
@@ -101,7 +101,7 @@ function _tomlEnvKey(options: TomlEnvKeyOptions) {
   return '';
 }
 
-function _instructions(result: { parsed: Record<string, TomlPrimitive>; error?: any; }, tomlEnvKey: WithImplicitCoercion<string>) {
+function _instructions(result: { parsed: ParsedToml; error?: any; }, tomlEnvKey: WithImplicitCoercion<string>) {
   // Parse TOML_ENV_KEY. Format is a URI
   let uri: URL;
   try {
@@ -188,7 +188,7 @@ export function _configVault(options: ConfigVaultOptions) {
   return { parsed: stringifyTomlValues(parsed) };
 }
 
-export function configTomlEnv(options: TomlEnvOptions): { parsed?: Record<string, TomlPrimitive>, error?: {} } {
+export function configTomlEnv(options: TomlEnvOptions): { parsed?: ParsedToml, error?: {} } {
   const tomlEnvPath = path.resolve(process.cwd(), defaultEnvName);
   let encoding: BufferEncoding = 'utf8';
   const debug = options?.debug;
@@ -206,14 +206,16 @@ export function configTomlEnv(options: TomlEnvOptions): { parsed?: Record<string
   // Build the parsed data in a temporary object (because we need to return it).  Once we have the final
   // parsed data, we will combine it with process.env (or options.processEnv if provided).
   let lastError: unknown;
-  const parsedAll = {};
+  const parsedAllString = {};
+  const parsedAllTyped = {};
   for (const path of optionPaths) {
     try {
       // Specifying an encoding returns a string instead of a buffer
       const parsed = parse(fs.readFileSync(path, { encoding }));
       const parsedWithJSONValues = stringifyTomlValues(parsed);
 
-      populate(parsedAll, parsedWithJSONValues, options);
+      populate(parsedAllString, parsedWithJSONValues, options);
+      populate(parsedAllTyped, parsed, options);
     } catch (e) {
       if (debug) {
         _debug(`Failed to load ${path} ${e.message}`);
@@ -222,22 +224,23 @@ export function configTomlEnv(options: TomlEnvOptions): { parsed?: Record<string
     }
   }
 
-  let processEnv = process.env;
-  if (options?.processEnv != null) {
-    processEnv = options.processEnv;
-  }
+  const processEnv = options?.processEnv ?? process.env;
+  const processEnvTyped = options?.processEnvTyped ?? process.envTyped;
 
-  populate(processEnv, parsedAll, options);
+  populate(processEnv, parsedAllString, options);
+  populate(processEnvTyped, parsedAllTyped, options);
+
+  const parsed = options?.typedOutput ? parsedAllTyped : parsedAllString;
 
   if (lastError) {
-    return { parsed: parsedAll, error: lastError };
+    return { parsed, error: lastError };
   } else {
-    return { parsed: parsedAll };
+    return { parsed };
   }
 }
 
 // Populates process.env from .env.toml file
-export function config(options?: TomlEnvOptions): { parsed?: Record<string, TomlPrimitive>, error?: {} } {
+export function config(options?: TomlEnvOptions): { parsed?: ParsedToml, error?: {} } {
   // fallback to original toml env if TOML_ENV_KEY is not set
   if (_tomlEnvKey(options).length == 0) {
     return configTomlEnv(options);
@@ -282,19 +285,19 @@ export function decrypt(encrypted: WithImplicitCoercion<string>, keyStr: string)
   }
 }
 
-// Populate process.env with parsed values
-export function populate(processEnv: NodeJS.ProcessEnv, parsedEnv: NodeJS.ProcessEnv, options: PopulateOptions = {}) {
+// Populate common target object with parsed values
+export function populate<T extends NodeJS.ProcessEnv | ParsedToml>(target: T, source: T, options: PopulateOptions = {}) {
   const { debug, override } = options;
 
-  if (typeof parsedEnv != 'object') {
+  if (typeof source != 'object') {
     throw new TomlEnvError('OBJECT_REQUIRED: Please check the processEnv argument being passed to populate', 'OBJECT_REQUIRED');
   }
 
-  // Set process.env
-  for (const key of Object.keys(parsedEnv)) {
-    if (Object.prototype.hasOwnProperty.call(processEnv, key)) {
+  // Set values to the target variable
+  for (const key of Object.keys(source)) {
+    if (Object.prototype.hasOwnProperty.call(target, key)) {
       if (override) {
-        processEnv[key] = parsedEnv[key];
+        target[key] = source[key];
         if (debug) {
           _debug(`"${key}" is already defined and WAS overwritten`);
         }
@@ -304,7 +307,7 @@ export function populate(processEnv: NodeJS.ProcessEnv, parsedEnv: NodeJS.Proces
         }
       }
     } else {
-      processEnv[key] = parsedEnv[key];
+      target[key] = source[key];
     }
   }
 }

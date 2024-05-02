@@ -1,5 +1,8 @@
 import { Encoding } from 'crypto';
 import { PathLike } from 'fs';
+import { TomlPrimitive } from 'smol-toml';
+
+export type ParsedToml = Record<string, TomlPrimitive>;
 
 export class TomlEnvError extends Error {
     constructor(message: string, public readonly code: string) {
@@ -14,6 +17,7 @@ export interface PopulateOptions {
 
 export interface ConfigVaultOptions extends PopulateOptions {
     processEnv?: NodeJS.ProcessEnv;
+    processEnvTyped?: ParsedToml;
 }
 
 export interface VaultPathOptions {
@@ -26,4 +30,15 @@ export interface TomlEnvKeyOptions {
 
 export interface TomlEnvOptions extends VaultPathOptions, ConfigVaultOptions, TomlEnvKeyOptions {
     encoding?: Encoding;
+    typedOutput?: boolean;
 }
+
+declare global {
+    namespace NodeJS {
+        interface Process {
+            envTyped: ParsedToml
+        }
+    }
+}
+
+process.envTyped = {};
