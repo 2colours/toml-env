@@ -2,8 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as crypto from 'crypto';
-//@ts-ignore package.json is NOT a source file, it's mandatory metadata
-import packageJson from '../package.json' assert { type: 'json' };
+import packageJson = require('../package.json');
 import { TomlPrimitive, parse } from 'smol-toml';
 import { ConfigVaultOptions, TomlEnvKeyOptions, PopulateOptions, TomlEnvError, TomlEnvOptions, VaultPathOptions, ParsedToml } from './custom-types.js';
 import { URL } from 'url';

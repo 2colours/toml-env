@@ -27,7 +27,7 @@ describe('cli-options module', () => {
         expect(
             spawn(
                 [
-                    '--import',
+                    '-r',
                     './dist/config.js',
                     '-e',
                     'console.log(process.env.BASIC)',
@@ -42,7 +42,7 @@ describe('cli-options module', () => {
         expect(
             spawn(
                 [
-                    '--import',
+                    '-r',
                     './dist/config.js',
                     '-e',
                     'console.log(process.env.BASIC)'
@@ -60,7 +60,7 @@ describe('cli-options module', () => {
         expect(
             spawn(
                 [
-                    '--import',
+                    '-r',
                     './dist/config.js',
                     '-e',
                     'console.log(process.env.BASIC)',
