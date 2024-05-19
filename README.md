@@ -45,7 +45,7 @@ require('@2colours/toml-env').config();
 console.log(process.env.REMOTE_HOST);
 ```
 
-.. [or using ES6?](#how-do-i-use-toml-env-with-import)
+.. or using ES6
 
 ```javascript
 // within the source code, as soon as possible
