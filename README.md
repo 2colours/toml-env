@@ -1,7 +1,3 @@
-# toml-env
-Node.JS dotenv-alike module using "env files" written in TOML
-
-
 # toml-env [![NPM version](https://img.shields.io/npm/v/@2colours/toml-env.svg?style=flat_square)](https://www.npmjs.com/package/@2colours/toml-env)
 
 
