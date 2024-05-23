@@ -79,7 +79,7 @@ $ TOML_ENV_CONFIG_ENCODING=latin1 TOML_ENV_CONFIG_DEBUG=true node -r @2colours/t
 
 ### Multiple Environments
 
-*** Notice: currently, this functionality is largely relying on the original functionality of `dotenv`, therefore the following parts are verbatim taken from the README of `dotenv`. To migrate the files, the following steps are required:**
+*** Notice: currently, this functionality is largely relying on the original functionality of `dotenv`, therefore the following parts are verbatim taken from the README of `dotenv`. To migrate the files, the following steps are required: ***
 
 1. Please make sure that your `.env.vault` file is valid according to TOML syntax (e.g. string quoting).
 2. Instead of `DOTENV_NAMES`, use `TOML_ENV_NAMES` as the keys.
