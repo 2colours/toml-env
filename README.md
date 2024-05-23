@@ -1,9 +1,6 @@
-# toml-env [![NPM version](https://img.shields.io/npm/v/@2colours/toml-env.svg?style=flat_square)](https://www.npmjs.com/package/@2colours/toml-env)
-
+# toml-env [![NPM version](https://img.shields.io/npm/v/@2colours/toml-env.svg?style=flat_square)](https://www.npmjs.com/package/@2colours/toml-env) [![LICENSE](https://img.shields.io/github/license/2colours/toml-env.svg)](LICENSE)
 
 `toml-env` is a largely [dotenv](https://github.com/motdotla/dotenv)-compatible module written in Typescript that uses [TOML](https://toml.io) to load configuration from a `.env.toml` file and exposes them via the [`process.env`](https://nodejs.org/docs/latest/api/process.html#process_process_env) and `process.envTyped` fields.
-
-[![LICENSE](https://img.shields.io/github/license/2colours/toml-env.svg)](LICENSE)
 
 * [🌱 Install](#-install)
 * [🏗️ Usage (.env.toml)](#%EF%B8%8F-usage)
