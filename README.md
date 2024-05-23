@@ -1,9 +1,11 @@
 # toml-env [![NPM version](https://img.shields.io/npm/v/@2colours/toml-env.svg?style=flat_square)](https://www.npmjs.com/package/@2colours/toml-env) [![LICENSE](https://img.shields.io/github/license/2colours/toml-env.svg)](LICENSE)
 
+### Node.JS dotenv-alike module using "env files" written in TOML
+
 `toml-env` is a largely [dotenv](https://github.com/motdotla/dotenv)-compatible module written in Typescript that uses [TOML](https://toml.io) to load configuration from a `.env.toml` file and exposes them via the [`process.env`](https://nodejs.org/docs/latest/api/process.html#process_process_env) and `process.envTyped` fields.
 
 * [🌱 Install](#-install)
-* [🏗️ Usage (.env.toml)](#%EF%B8%8F-usage)
+* [🏗️ Usage (.env.toml)](#-usage)
 * [🌴 Multiple Environments 🆕](#-manage-multiple-environments) (**dotenv legacy**)
 * [🚀 Deploying (.env.vault) 🆕](#-deploying) (**dotenv legacy**)
 * [📖 Docs](#-documentation)
@@ -28,10 +30,12 @@ API_TOKEN="bla42bla42bla42_"
 ```
 
 There are plenty of ways to load `toml-env` with the default configuration:
+
 ```sh
 # using Node's --require flag, assuming index.js as entry point
 node -r @2colours/toml-env/config index.js
 ```
+
 ```javascript
 // within the source code, as soon as possible
 require('@2colours/toml-env').config();
@@ -228,7 +232,7 @@ require('@2colours/toml-env').config({ path: '/custom/path/to/.env.toml' });
 
 By default, `config` will look for a file called .env.toml in the current working directory.
 
-Pass in multiple files as an array, and they will be parsed in order and combined with `process.env` (or `option.processEnv`, if set) and `process.envTyped` (or `option.processEnvTyped`, if set). The first value set for a variable will win, unless the `options.override` flag is set, in which case the last value set will win.  If a value already exists in `process.env` and the `options.override` flag is NOT set, no changes will be made to that value. 
+Pass in multiple files as an array, and they will be parsed in order and combined into `process.env` and `process.envTyped` (or `option.processEnv` and `option.processEnvTyped` respectively, if set). By default, once a key has been set a value, instances of that same key in subsequent files are ignored. To override the value of a key with each subsequent file, set `options.override` to `true`. 
 
 ```js  
 require('@2colours/toml-env').config({ path: ['.env.toml.local', '.env.toml'] });
@@ -258,7 +262,9 @@ require('@2colours/toml-env').config({ debug: process.env.DEBUG });
 
 Default: `false`
 
-Override any environment variables that have already been set on your machine with values from your .env file(s). If multiple files have been provided in `option.path` the override will also be used as each file is combined with the next. Without `override` being set, the first value wins. With `override` set the last value wins. 
+Override any environment variables that have already been set on your machine with values from your .env file(s).
+
+When providing multiple files in `options.path`, this option will also tell `toml-env` to override the value of a key upon encountering a duplicate definition.
 
 ```js
 require('@2colours/toml-env').config({ override: true });
@@ -317,7 +323,7 @@ const config = tomlEnv.parse(rawData); // will return an object
 
 ### Populate
 
-The engine which populates the contents of your .env.toml file to `process.env` (and `process.envTyped`) is available for use. It accepts a target, a source, and options. This is useful for power users who want to supply their own objects.
+The engine which populates `process.env` and `process.envTyped` with the contents of your .env.toml file is available for use. It accepts a target, a source, and options. This is useful for power users who want to supply their own objects.
 
 For example, customizing the source:
 
