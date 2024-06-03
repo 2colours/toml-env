@@ -2,6 +2,8 @@
 	"name": "@2colours/toml-env",
 	"version": "0.0.5",
 	"description": "Node.JS dotenv-alike module using \"env files\" written in TOML",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
